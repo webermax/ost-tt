@@ -1,0 +1,14 @@
+curl --create-dirs https://raw.githubusercontent.com/StrobeTechnologiesLtd/osTicket-1.8/TimeTracking/include/class.config.php -o include/class.config.php
+curl --create-dirs https://raw.githubusercontent.com/StrobeTechnologiesLtd/osTicket-1.8/TimeTracking/include/class.list.php -o include/class.list.php
+curl --create-dirs https://raw.githubusercontent.com/StrobeTechnologiesLtd/osTicket-1.8/TimeTracking/include/class.nav.php -o include/class.nav.php
+curl --create-dirs https://raw.githubusercontent.com/StrobeTechnologiesLtd/osTicket-1.8/TimeTracking/include/class.thread.php -o include/class.thread.php
+curl --create-dirs https://raw.githubusercontent.com/StrobeTechnologiesLtd/osTicket-1.8/TimeTracking/include/class.ticket.php -o include/class.ticket.php
+curl --create-dirs https://raw.githubusercontent.com/StrobeTechnologiesLtd/osTicket-1.8/TimeTracking/include/client/view.inc.php -o include/client/view.inc.php
+curl --create-dirs https://raw.githubusercontent.com/StrobeTechnologiesLtd/osTicket-1.8/TimeTracking/include/staff/settings-tickettime.inc.php -o include/staff/settings-tickettime.inc.php
+curl --create-dirs https://raw.githubusercontent.com/StrobeTechnologiesLtd/osTicket-1.8/TimeTracking/include/staff/ticket-view.inc.php -o include/staff/ticket-view.inc.php
+curl --create-dirs https://raw.githubusercontent.com/StrobeTechnologiesLtd/osTicket-1.8/TimeTracking/scp/settings.php -o scp/settings.php
+curl --create-dirs https://raw.githubusercontent.com/StrobeTechnologiesLtd/osTicket-1.8/TimeTracking/scp/tickets.php -o scp/tickets.php
+curl --create-dirs https://raw.githubusercontent.com/StrobeTechnologiesLtd/osTicket-1.8/TimeTracking/scp/tickets_cost.php -o scp/tickets_cost.php
+curl --create-dirs https://raw.githubusercontent.com/StrobeTechnologiesLtd/osTicket-1.8/TimeTracking/scp/tickets_hardware.php -o scp/tickets_hardware.php
+curl --create-dirs https://raw.githubusercontent.com/StrobeTechnologiesLtd/osTicket-1.8/TimeTracking/scp/tickets_bill.php -o scp/tickets_bill.php
+curl --create-dirs https://raw.githubusercontent.com/StrobeTechnologiesLtd/osTicket-1.8/TimeTracking/include/i18n/en_US/help/tips/settings.tickettime.yaml -o include/i18n/en_US/help/tips/settings.tickettime.yaml
