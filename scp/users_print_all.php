@@ -77,6 +77,7 @@ if(!$errors) {
 					u.id = ti.user_id
 					AND ti.ticket_id = t.ticket_id
 					AND ti.status_id = 3
+					AND ti.time_spent
 					' . ($_REQUEST['date'] ? 'AND DATE_FORMAT(ti.closed,"%Y - %m") = "' . $_REQUEST["date"] . '"' : '') . '
 				GROUP BY
 					u.id

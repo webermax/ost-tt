@@ -129,7 +129,8 @@ if(!$errors) {
 			$sql = 'SELECT
 					COUNT(ti.ticket_id) AS numTickets,
 					SUM(ti.time_spent) AS sum,
-					t.numOnsite
+					t.numOnsite,
+					ti.closed
 				FROM
 					ost_ticket ti,
 					(SELECT ticket_id, SUM(case when time_type = 5 then 1 else 0 end) AS numOnsite FROM ost_ticket_thread WHERE 1 GROUP BY ticket_id) t
@@ -138,6 +139,7 @@ if(!$errors) {
 					AND ti.ticket_id = t.ticket_id
 					AND ti.status_id = 3
 					AND ti.closed
+					AND ti.time_spent
 				GROUP BY
 					DATE_FORMAT(ti.closed,"%Y - %m")
 				ORDER BY
@@ -145,7 +147,7 @@ if(!$errors) {
 			$res = db_query($sql);
 			while($row = db_fetch_array($res, MYSQL_ASSOC)) {
 				if ($row['poster']<>"SYSTEM") {
-					$date = new DateTime($row['created']);
+					$date = new DateTime($row['closed']);
 					echo '<tr>';
 						echo "<td>" . $date->format('Y - m') . "</td>";
 						echo "<td>" . $row['numTickets'] . "</td>";
