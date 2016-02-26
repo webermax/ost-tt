@@ -96,10 +96,9 @@ if(!$errors) {
 		<thead>
 			<tr>
 				<th width="40%">Monat</th>
-				<th width="10%">Tickets aktiv</th>
-				<th width="10%">Zeit</th>
+				<th width="10%">Erledigt</th>
+				<th width="10%">Gesamtzeit</th>
 				<th width="10%">Anfahrten</th>
-				<th width="30%">Kategorien</th>
 			</tr>
 		</thead>
 		<?php
@@ -107,24 +106,42 @@ if(!$errors) {
 					t.created,
 					COUNT(t.id) AS count,
 					COUNT(DISTINCT ti.ticket_id) AS numTickets,
-					SUM(t.time_spent) AS sum,
 					SUM(case when t.time_type = 1 then 1 else 0 end) AS numTelephone,
 					SUM(case when t.time_type = 2 then 1 else 0 end) AS numEmail,
 					SUM(case when t.time_type = 3 then 1 else 0 end) AS numRemote,
 					SUM(case when t.time_type = 4 then 1 else 0 end) AS numWorkshop,
-					SUM(case when t.time_type = 5 then 1 else 0 end) AS numOnsite
+					SUM(case when t.time_type = 5 then 1 else 0 end) AS numOnsite,
+					time.sum,
 				FROM
 					ost_ticket_thread t,
-					ost_ticket ti
+					ost_ticket ti,
+					(SELECT ti2.created, ti2.user_id, SUM(ti2.time_spent) as sum FROM ost_ticket ti2 GROUP BY ti2.user_id) time
 				WHERE
 					t.ticket_id = ti.ticket_id
 					AND ti.user_id = ' . $UserID . '
 					AND (t.thread_type="R" OR t.thread_type="N")
 					AND time_bill = 1
+					AND time.user_id = ti.user_id
 				GROUP BY
 					DATE_FORMAT(t.created,"%Y - %m")
 				ORDER BY
 					t.created DESC';
+			$sql = 'SELECT
+					COUNT(ti.ticket_id) AS numTickets,
+					SUM(ti.time_spent) AS sum,
+					t.numOnsite
+				FROM
+					ost_ticket ti,
+					(SELECT ticket_id, SUM(case when time_type = 5 then 1 else 0 end) AS numOnsite FROM ost_ticket_thread WHERE 1 GROUP BY ticket_id) t
+				WHERE
+					ti.user_id = ' . $UserID . '
+					AND ti.ticket_id = t.ticket_id
+					AND ti.status_id = 3
+					AND ti.closed
+				GROUP BY
+					DATE_FORMAT(ti.closed,"%Y - %m")
+				ORDER BY
+					ti.closed DESC';
 			$res = db_query($sql);
 			while($row = db_fetch_array($res, MYSQL_ASSOC)) {
 				if ($row['poster']<>"SYSTEM") {
@@ -134,13 +151,6 @@ if(!$errors) {
 						echo "<td>" . $row['numTickets'] . "</td>";
 						echo "<td>" . formatTime($row['sum']) . "</td>";
 						echo "<td>" . $row['numOnsite'] . "</td>";
-						echo "<td>";
-						echo "<div style='display:inline-block;height:10px;background:black;width:" . $row['numTelephone'] / $row['count'] * 100 . "%'></div>";
-						echo "<div style='display:inline-block;height:10px;background:gray;width:" . $row['numEmail'] / $row['count'] * 100 . "%'></div>";
-						echo "<div style='display:inline-block;height:10px;background:orange;width:" . $row['numRemote'] / $row['count'] * 100 . "%'></div>";
-						echo "<div style='display:inline-block;height:10px;background:chocolate;width:" . $row['numWorkshop'] / $row['count'] * 100 . "%'></div>";
-						echo "<div style='display:inline-block;height:10px;background:firebrick;width:" . $row['numOnsite'] / $row['count'] * 100 . "%'></div>";
-						echo "</td>";
 					echo '</tr>';
 				}
 			}
@@ -148,14 +158,6 @@ if(!$errors) {
 	</table>
 	
 <?php
-
-echo "<p />";
-
-echo "<div style='display:inline-block;height:10px;background:black;width:10px'></div> Telefon ";
-echo "<div style='display:inline-block;height:10px;background:gray;width:10px'></div> E-Mail ";
-echo "<div style='display:inline-block;height:10px;background:orange;width:10px'></div> Remote ";
-echo "<div style='display:inline-block;height:10px;background:chocolate;width:10px'></div> Werkstatt ";
-echo "<div style='display:inline-block;height:10px;background:firebrick;width:10px'></div> Anfahrt";
 
 } else {
 ?>
