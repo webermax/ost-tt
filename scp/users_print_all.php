@@ -68,7 +68,7 @@ if(!$errors) {
 					SUM(ti.time_spent) AS sum,
 					u.name AS name,
 					u.id AS userId,
-					t.numOnsite
+					SUM(t.numOnsite) AS numOnsite
 				FROM
 					ost_user u,
 					ost_ticket ti,
