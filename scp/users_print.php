@@ -103,33 +103,9 @@ if(!$errors) {
 		</thead>
 		<?php
 			$sql = 'SELECT
-					t.created,
-					COUNT(t.id) AS count,
-					COUNT(DISTINCT ti.ticket_id) AS numTickets,
-					SUM(case when t.time_type = 1 then 1 else 0 end) AS numTelephone,
-					SUM(case when t.time_type = 2 then 1 else 0 end) AS numEmail,
-					SUM(case when t.time_type = 3 then 1 else 0 end) AS numRemote,
-					SUM(case when t.time_type = 4 then 1 else 0 end) AS numWorkshop,
-					SUM(case when t.time_type = 5 then 1 else 0 end) AS numOnsite,
-					time.sum,
-				FROM
-					ost_ticket_thread t,
-					ost_ticket ti,
-					(SELECT ti2.created, ti2.user_id, SUM(ti2.time_spent) as sum FROM ost_ticket ti2 GROUP BY ti2.user_id) time
-				WHERE
-					t.ticket_id = ti.ticket_id
-					AND ti.user_id = ' . $UserID . '
-					AND (t.thread_type="R" OR t.thread_type="N")
-					AND time_bill = 1
-					AND time.user_id = ti.user_id
-				GROUP BY
-					DATE_FORMAT(t.created,"%Y - %m")
-				ORDER BY
-					t.created DESC';
-			$sql = 'SELECT
 					COUNT(ti.ticket_id) AS numTickets,
 					SUM(ti.time_spent) AS sum,
-					t.numOnsite,
+					SUM(t.numOnsite) AS numOnsite,
 					ti.closed
 				FROM
 					ost_ticket ti,
@@ -150,7 +126,7 @@ if(!$errors) {
 					$date = new DateTime($row['closed']);
 					echo '<tr>';
 						echo "<td>" . $date->format('Y - m') . "</td>";
-						echo "<td>" . $row['numTickets'] . "</td>";
+						echo "<td><a href='users.php?id=" . $UserID . "'>" . $row['numTickets'] . "</a></td>";
 						echo "<td>" . formatTime($row['sum']) . "</td>";
 						echo "<td>" . $row['numOnsite'] . "</td>";
 					echo '</tr>';
