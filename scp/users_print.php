@@ -78,9 +78,10 @@ if(!$errors) {
 require_once(STAFFINC_DIR.'header.inc.php');
 
 if(!$errors) {
+	
 ?>
 
-	<h1>Ticketbericht <?php echo $Username ?></h1>
+	<h1>Ticketbericht: <?php echo $Username ?></h1>
 	
 	<p>
 		<?php
@@ -96,41 +97,53 @@ if(!$errors) {
 		<thead>
 			<tr>
 				<th width="40%">Monat</th>
-				<th width="10%">Erledigt</th>
-				<th width="10%">Gesamtzeit</th>
-				<th width="10%">Anfahrten</th>
+				<th width="12%">Aktive Tickets</th>
+				<th width="12%">Aktivitäten</th>
+				<th width="12%">Antwortzeit</th>
+				<th width="12%">Gesamtzeit</th>
+				<th width="12%">Anfahrten</th>
 			</tr>
 		</thead>
 		<?php
 			$sql = 'SELECT
+					SUM(t.activities) AS activities,
 					COUNT(ti.ticket_id) AS numTickets,
-					SUM(ti.time_spent) AS sum,
+					SUM(ti.time_spent) AS sumOverall,
 					SUM(t.numOnsite) AS numOnsite,
-					ti.closed
+					t.created AS created,
+					SUM(t.sum) AS sum
 				FROM
 					ost_ticket ti,
-					(SELECT ticket_id, SUM(case when time_type = 5 then 1 else 0 end) AS numOnsite FROM ost_ticket_thread WHERE 1 GROUP BY ticket_id) t
+					(SELECT
+						ticket_id,
+						created,
+						SUM(time_spent) AS sum,
+						SUM(case when time_type = 5 then 1 else 0 end) AS numOnsite,
+						COUNT(id) AS activities
+					FROM
+						ost_ticket_thread
+					WHERE
+						time_spent
+					GROUP BY
+						ticket_id, DATE_FORMAT(created,"%Y - %m")) t
 				WHERE
 					ti.user_id = ' . $UserID . '
 					AND ti.ticket_id = t.ticket_id
-					AND ti.status_id = 3
-					AND ti.closed
-					AND ti.time_spent
 				GROUP BY
-					DATE_FORMAT(ti.closed,"%Y - %m")
+					DATE_FORMAT(t.created,"%Y - %m")
 				ORDER BY
-					ti.closed DESC';
+					created DESC';
 			$res = db_query($sql);
 			while($row = db_fetch_array($res, MYSQL_ASSOC)) {
-				if ($row['poster']<>"SYSTEM") {
-					$date = new DateTime($row['closed']);
-					echo '<tr>';
-						echo "<td>" . $date->format('Y - m') . "</td>";
-						echo "<td><a href='users.php?id=" . $UserID . "'>" . $row['numTickets'] . "</a></td>";
-						echo "<td>" . formatTime($row['sum']) . "</td>";
-						echo "<td>" . $row['numOnsite'] . "</td>";
-					echo '</tr>';
-				}
+				$date = new DateTime($row['created']);
+				echo '<tr>';
+					echo "<td><a href='users_print_details.php?id=" . $UserID . "&date=" . $date->format('Y - m') . "'>" . $date->format('Y - m') . "</a></td>";
+					echo "<td>" . $row['numTickets'] . "</td>";
+					echo "<td>" . $row['activities'] . "</td>";
+					echo "<td>" . formatTime($row['sum']) . "</td>";
+					echo "<td>" . formatTime($row['sumOverall']) . "</td>";
+					echo "<td>" . $row['numOnsite'] . "</td>";
+				echo '</tr>';
 			}
 		?>
 	</table>
