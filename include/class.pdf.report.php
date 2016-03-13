@@ -38,7 +38,7 @@ class Ticket2Report extends mPDF
         
         $this->SetImportUse();
         
-        $this->percentSubset = 0;
+        //$this->percentSubset = 0;
 
         $pagecount = $this->SetSourceFile(INCLUDE_DIR.'fpdf/' . $source);
         $tplId = $this->ImportPage($pagecount);
