@@ -101,6 +101,8 @@ if($ticket->isOverdue())
 				 <!-- Strobe Technologies Ltd | 11/08/2015 | START - Adds bill printing to print menu -->
 				 <!--- osTicket Version = v1.9.11 -->
 				 <?php if ($cfg->isThreadTime()) { ?>
+				 	<li><a class="no-pjax" target="_blank" href="users_print_pdf.php?id=<?php echo $ticket->getId(); ?>"><i
+					class="icon-file-text"></i> <?php echo __('Dienstleistungsbericht'); ?></a>
 					<li><a class="no-pjax" target="_blank" href="tickets_bill.php?id=<?php echo $ticket->getId(); ?>"><i
 					class="icon-file-alt"></i> <?php echo __('Bill / Invoice'); ?></a>
 					<li><a class="no-pjax" target="_blank" href="tickets_cost.php?id=<?php echo $ticket->getId(); ?>"><i
