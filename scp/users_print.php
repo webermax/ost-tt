@@ -29,16 +29,6 @@ function convTimeType($typeid) {
 	return $typetext;
 }
 
-function countTime($ticketid, $typeid) {
-	$sql = 'SELECT SUM(`time_spent`) AS `totaltime` FROM `ost_ticket_thread` WHERE `ticket_id` = '. $ticketid .' AND `time_type` = '. $typeid .' AND time_bill = 1';
-	$res = db_query($sql);
-	
-	$timearray = db_fetch_array($res);
-
-	$totaltime = $timearray['totaltime'];
-	return $totaltime;
-}
-
 
 $user = null;
 
@@ -57,22 +47,6 @@ if(!$errors) {
 	// Retrieve User Information
 	$Username = $user->getName();
 	$UserID = $user->getID();
-
-	// Determine ID value for time-type
-	$sql = 'SELECT * FROM `ost_list` WHERE `type` = "time-type"';
-	$res = db_query($sql);
-	$timelist = db_fetch_array($res);
-	$timelistid = $timelist['id'];
-
-	// Generate Array of times for summary
-	$sql = 'SELECT * FROM `ost_list_items` where `list_id` = ' . $timelistid;
-	$res = db_query($sql);
-	$loop = 0;
-	while($row = db_fetch_array($res, MYSQL_ASSOC)) {
-		$loop++;
-		$time[$loop][0] = countTime($TicketID, $row['id']);
-		$time[$loop][1] = $row['id'];
-	}
 }
 
 require_once(STAFFINC_DIR.'header.inc.php');
@@ -152,7 +126,7 @@ if(!$errors) {
 
 } else {
 ?>
-	<h1>Ticketbericht <?php echo $Username ?></h1>
+	<h1>Ticketbericht: <?php echo $Username ?></h1>
 	<p>Fehler.</p>
 <?php
 }
