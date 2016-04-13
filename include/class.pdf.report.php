@@ -153,7 +153,7 @@ class Ticket2Report extends mPDF
         //$this->WriteCell($w, 7,sprintf(__('Ticket #%s'),$ticket->getNumber()), 0, 0, 'L');
         
         $this->SetFont('Arial', 'B', 10);
-        $this->SetY(87.5);
+        $this->SetY(52);
         $this->WriteCell(0, 5.5 ,sprintf(__('Ticket #%s'), $ticket->getNumber()), 0, 1, 'L');
         
         /*
@@ -262,9 +262,9 @@ class Ticket2Report extends mPDF
         	
         	$comments = array_splice($entries, 1);
         	
-        	$this->WriteCell(0, 5.5, Format::truncate(strip_tags($entries[0]['body']->display('pdf')), 50), 0, 1, 'L');
+        	$this->WriteCell(0, 5.5, strip_tags($entries[0]['body']->display('pdf')), 0, 1, 'L');
         	
-        	$this->SetY(125);
+        	$this->SetY(100.5);
         	
             foreach($comments as $idx => $entry) {
             	
@@ -277,13 +277,28 @@ class Ticket2Report extends mPDF
                 //$this->WriteCell($w/2, 7, Format::db_datetime($entry['created']), 'LTB', 0, 'L', true);
                 
             	//$entry['title']
-                
-                $this->WriteCell(120, 7, Format::truncate(strip_tags($entry['body']->display('pdf')), 50), 0, 0, 'L');
-                $this->WriteCell(120, 7, ($entry['name'] ?: $entry['poster']) . ' / ' . $this->formatTime($entry['time_spent']), 0, 1, 'L');
+            	
+                $this->MultiCell(186, 7.15, '[' . ($entry['name'] ?: $entry['poster']) . ', ' . $this->formatTime($entry['time_spent']) . ']: ' . strip_tags($entry['body']->display('pdf')), 0, 'L', 0);
 
             }
         }
+        
+        $stats = $this->getTicketStats();
+        
+        $this->WriteCell(0, 7.15, '', 0, 1, 'L');
+        
+        $this->WriteCell(93, 7.15, 'Arbeitszeit Gesamt: ' . $this->formatTime($stats['sum']), 0, 0, 'L');
+        $this->WriteCell(93, 7.15, 'Anzahl Anfahrten: ' . $stats['numOnsite'], 0, 0, 'L');
+		
+        $this->SetFont('Arial', '', 8.5);
+        $this->setY(40.75);
 
+        $this->SetX(160);
+        $this->Cell(0, 5.5, $stats['day'], 0, 0, 'L');
+        $this->SetX(170);
+        $this->Cell(0, 5.5, $stats['month'], 0, 0, 'L');
+        $this->SetX(181);
+        $this->Cell(0, 5.5, $stats['year'], 0, 0, 'L');
     }
     
     function formatTime($time) {
@@ -302,5 +317,38 @@ class Ticket2Report extends mPDF
     	}
     	return $formatted;
     }
+    
+    function getTicketStats() {
+    	if(!($ticket=$this->getTicket()))
+    		return;
+    	
+    	$sql = 'SELECT
+		    	ti.ticket_id,
+		    	ti.number,
+		    	ti.time_spent AS sumOverall,
+		    	t.numOnsite AS numOnsite,
+		    	t.sum AS sum,
+		    	t.activities AS activities,
+		    	DATE_FORMAT(ti.created,"%d") AS day,
+		    	DATE_FORMAT(ti.created,"%m") AS month,
+		    	DATE_FORMAT(ti.created,"%y") AS year
+		    FROM
+		    	ost_ticket ti,
+		    	(SELECT
+			    	ticket_id,
+			    	SUM(time_spent) AS sum,
+			    	SUM(case when time_type = 5 then 1 else 0 end) AS numOnsite,
+			    	COUNT(id) AS activities
+		    	FROM
+		    		ost_ticket_thread
+		    	WHERE
+			    	time_spent
+		    	GROUP BY
+		    		ticket_id) t
+		    WHERE
+		    	ti.ticket_id = ' . $ticket->getId() . '
+		    	AND ti.ticket_id = t.ticket_id';
+
+    	return db_fetch_array(db_query($sql), MYSQL_ASSOC);
+    }
 }
-?>
