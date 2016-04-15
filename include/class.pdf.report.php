@@ -262,7 +262,13 @@ class Ticket2Report extends mPDF
         	
         	$comments = array_splice($entries, 1);
         	
-        	$this->WriteCell(0, 5.5, strip_tags($entries[0]['body']->display('pdf')), 0, 1, 'L');
+        	$body = str_replace(
+        			array('&auml;', '&ouml;', '&uuml;', '&Auml;', '&Ouml;', '&Uuml;', '&szlig;'),
+        			array('ä', 'ö', 'ü', 'Ä', 'Ö', 'Ü', 'ß'),
+        			$entries[0]['body']
+        	);
+        	
+        	$this->MultiCell(186, 5.5, strip_tags($body), 0, 'L', 0);
         	
         	$this->SetY(100.5);
         	
@@ -278,27 +284,52 @@ class Ticket2Report extends mPDF
                 
             	//$entry['title']
             	
-                $this->MultiCell(186, 7.15, '[' . ($entry['name'] ?: $entry['poster']) . ', ' . $this->formatTime($entry['time_spent']) . ']: ' . strip_tags($entry['body']->display('pdf')), 0, 'L', 0);
+                //$this->MultiCell(186, 7.15, '[' . ($entry['name'] ?: $entry['poster']) . ', ' . $this->formatTime($entry['time_spent']) . ']: ' . Format::html2text(strip_tags($entry['body']->display('pdf'))), 0, 'L', 0);
 
+            	$body = '[' . ($entry['name'] ?: $entry['poster']) . ', ' . $this->formatTime($entry['time_spent']) . ']: ' . $entry['body'];
+            	
+            	$body = str_replace(
+            			array('&auml;', '&ouml;', '&uuml;', '&Auml;', '&Ouml;', '&Uuml;', '&szlig;'),
+            			array('ä', 'ö', 'ü', 'Ä', 'Ö', 'Ü', 'ß'),
+            			$body
+            	);
+            	
+            	$this->MultiCell(186, 7.15, strip_tags($body), 0, 'L', 0);
             }
         }
         
+        // stats
         $stats = $this->getTicketStats();
         
         $this->WriteCell(0, 7.15, '', 0, 1, 'L');
         
-        $this->WriteCell(93, 7.15, 'Arbeitszeit Gesamt: ' . $this->formatTime($stats['sum']), 0, 0, 'L');
-        $this->WriteCell(93, 7.15, 'Anzahl Anfahrten: ' . $stats['numOnsite'], 0, 0, 'L');
-		
+        if($stats['sum']) {
+        	$this->WriteCell(93, 7.15, 'Arbeitszeit Gesamt: ' . $this->formatTime($stats['sum']), 0, 0, 'L');
+        }
+        
+        if($stats['numOnsite']) {
+        	$this->WriteCell(93, 7.15, 'Anzahl Anfahrten: ' . $stats['numOnsite'], 0, 0, 'L');
+        }
+        
+        // owner
+        $this->setY(17);
+        $owner = $ticket->getOwner();
+        
+        $this->Cell(80, 7.15, $owner->getFullName(), 0, 1, 'L');
+        //$this->Cell(80, 7.15, $owner->getVar('Street'), 0, 1, 'L');
+
+        // date
+        $info = $this->getTicketInfo();
+        
         $this->SetFont('Arial', '', 8.5);
         $this->setY(40.75);
-
+        
         $this->SetX(160);
-        $this->Cell(0, 5.5, $stats['day'], 0, 0, 'L');
+        $this->Cell(0, 5.5, $info['day'], 0, 0, 'L');
         $this->SetX(170);
-        $this->Cell(0, 5.5, $stats['month'], 0, 0, 'L');
+        $this->Cell(0, 5.5, $info['month'], 0, 0, 'L');
         $this->SetX(181);
-        $this->Cell(0, 5.5, $stats['year'], 0, 0, 'L');
+        $this->Cell(0, 5.5, $info['year'], 0, 0, 'L');
     }
     
     function formatTime($time) {
@@ -328,10 +359,7 @@ class Ticket2Report extends mPDF
 		    	ti.time_spent AS sumOverall,
 		    	t.numOnsite AS numOnsite,
 		    	t.sum AS sum,
-		    	t.activities AS activities,
-		    	DATE_FORMAT(ti.created,"%d") AS day,
-		    	DATE_FORMAT(ti.created,"%m") AS month,
-		    	DATE_FORMAT(ti.created,"%y") AS year
+		    	t.activities AS activities
 		    FROM
 		    	ost_ticket ti,
 		    	(SELECT
@@ -349,6 +377,22 @@ class Ticket2Report extends mPDF
 		    	ti.ticket_id = ' . $ticket->getId() . '
 		    	AND ti.ticket_id = t.ticket_id';
 
+    	return db_fetch_array(db_query($sql), MYSQL_ASSOC);
+    }
+    
+    function getTicketInfo() {
+    	if(!($ticket=$this->getTicket()))
+    		return;
+    	 
+    	$sql = 'SELECT
+	    	DATE_FORMAT(ti.created,"%d") AS day,
+	    	DATE_FORMAT(ti.created,"%m") AS month,
+	    	DATE_FORMAT(ti.created,"%y") AS year
+    	FROM
+    		ost_ticket ti
+    	WHERE
+    		ti.ticket_id = ' . $ticket->getId();
+    
     	return db_fetch_array(db_query($sql), MYSQL_ASSOC);
     }
 }
