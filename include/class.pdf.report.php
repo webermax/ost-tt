@@ -262,13 +262,7 @@ class Ticket2Report extends mPDF
         	
         	$comments = array_splice($entries, 1);
         	
-        	$body = str_replace(
-        			array('&auml;', '&ouml;', '&uuml;', '&Auml;', '&Ouml;', '&Uuml;', '&szlig;'),
-        			array('ä', 'ö', 'ü', 'Ä', 'Ö', 'Ü', 'ß'),
-        			$entries[0]['body']
-        	);
-        	
-        	$this->MultiCell(186, 5.5, strip_tags($body), 0, 'L', 0);
+        	$this->MultiCell(186, 5.5, strip_tags($this->specialChars($body)), 0, 'L', 0);
         	
         	$this->SetY(100.5);
         	
@@ -286,15 +280,11 @@ class Ticket2Report extends mPDF
             	
                 //$this->MultiCell(186, 7.15, '[' . ($entry['name'] ?: $entry['poster']) . ', ' . $this->formatTime($entry['time_spent']) . ']: ' . Format::html2text(strip_tags($entry['body']->display('pdf'))), 0, 'L', 0);
 
-            	$body = '[' . ($entry['name'] ?: $entry['poster']) . ', ' . $this->formatTime($entry['time_spent']) . ']: ' . $entry['body'];
+            	$intro = '[' . ($entry['name'] ?: $entry['poster']) . ', ' . $this->formatDatetime($entry['created']) . ', ' . $this->formatTime($entry['time_spent']) . ']: ';
             	
-            	$body = str_replace(
-            			array('&auml;', '&ouml;', '&uuml;', '&Auml;', '&Ouml;', '&Uuml;', '&szlig;'),
-            			array('ä', 'ö', 'ü', 'Ä', 'Ö', 'Ü', 'ß'),
-            			$body
-            	);
-            	
-            	$this->MultiCell(186, 7.15, strip_tags($body), 0, 'L', 0);
+            	$body = $intro . $entry['body'];
+
+            	$this->MultiCell(186, 7.15, strip_tags($this->specialChars($body)), 0, 'L', 0);
             }
         }
         
@@ -349,6 +339,10 @@ class Ticket2Report extends mPDF
     	return $formatted;
     }
     
+    function formatDatetime($time) {
+    	return date("d.m.y",strtotime($time));
+    }
+    
     function getTicketStats() {
     	if(!($ticket=$this->getTicket()))
     		return;
@@ -394,5 +388,13 @@ class Ticket2Report extends mPDF
     		ti.ticket_id = ' . $ticket->getId();
     
     	return db_fetch_array(db_query($sql), MYSQL_ASSOC);
+    }
+    
+    function specialChars($string) {
+    	return str_replace(
+    			array('&auml;', '&ouml;', '&uuml;', '&Auml;', '&Ouml;', '&Uuml;', '&szlig;', '&nbps;'),
+    			array('ä', 'ö', 'ü', 'Ä', 'Ö', 'Ü', 'ß', ' '),
+    			$string
+    	);
     }
 }
