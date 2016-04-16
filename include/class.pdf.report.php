@@ -392,8 +392,8 @@ class Ticket2Report extends mPDF
     
     function specialChars($string) {
     	return str_replace(
-    			array('&auml;', '&ouml;', '&uuml;', '&Auml;', '&Ouml;', '&Uuml;', '&szlig;', '&nbps;'),
-    			array('ä', 'ö', 'ü', 'Ä', 'Ö', 'Ü', 'ß', ' '),
+    			array('&auml;', '&ouml;', '&uuml;', '&Auml;', '&Ouml;', '&Uuml;', '&szlig;', '&nbsp;', '<br>', '<br />', '<br></br>'),
+    			array('ä', 'ö', 'ü', 'Ä', 'Ö', 'Ü', 'ß', ' ', ' ', ' ', ' '),
     			$string
     	);
     }
