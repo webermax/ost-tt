@@ -27,6 +27,10 @@ class Ticket2Report extends mPDF
 	var $pageOffset = 0;
 
     var $ticket = null;
+    
+    //var $pagecount = null;
+    
+    protected $_tplIdx;
 
 	function Ticket2Report($source, $ticket, $psize='A4', $notes=false) {
         global $thisstaff;
@@ -39,13 +43,9 @@ class Ticket2Report extends mPDF
         $this->SetImportUse();
         
         //$this->percentSubset = 0;
-
-        $pagecount = $this->SetSourceFile(INCLUDE_DIR.'fpdf/' . $source);
-        $tplId = $this->ImportPage($pagecount);
         
-        $this->UseTemplate($tplId);
+        $this->SetSourceFile(INCLUDE_DIR.'fpdf/' . $source);
         
-        $this->SetLeftMargin(17);
 
         //$this->SetMargins(10,10,10);
 		//$this->AliasNbPages();
@@ -54,6 +54,9 @@ class Ticket2Report extends mPDF
 		
         //$this->SetMargins(0,0,0);
         //$this->cMargin = 0;
+        
+        $this->AddPage();
+        $this->cMargin = 0;
 
         $this->_print();
 	}
@@ -83,6 +86,10 @@ class Ticket2Report extends mPDF
 
 	//report header...most stuff are hard coded for now...
 	function Header() {
+		
+		if(!($ticket=$this->getTicket()))
+			return;
+
 		/*
         global $cfg;
 
@@ -104,6 +111,47 @@ class Ticket2Report extends mPDF
             .' GMT '.$_SESSION['TZ_OFFSET'], 0, 1, 'R');
 		$this->Ln(5);
 		*/
+		
+		if (null === $this->_tplIdx) {
+			$this->_tplIdx = $this->importPage(1);
+		}
+		
+		$this->useTemplate($this->_tplIdx);
+		
+		$this->SetLeftMargin(17);
+		$this->SetAutoPageBreak(true, 50);
+		
+		$this->SetFont('Arial', '', 10);
+		
+		/*
+		// number
+		$this->SetFont('Arial', 'B', 10);
+		$this->SetY(52);
+		$this->WriteCell(0, 5.5 ,sprintf(__('Ticket #%s'), $ticket->getNumber()), 0, 1, 'L');
+		*/
+		
+		// owner
+		$this->setY(17);
+		$owner = $ticket->getOwner();
+		
+		$this->Cell(80, 7.15, $owner->getFullName(), 0, 1, 'L');
+		//$this->Cell(80, 7.15, $owner->getVar('Street'), 0, 1, 'L');
+		
+		// date
+		$info = $this->getTicketInfo();
+		
+		$this->SetFont('Arial', '', 8.5);
+		$this->setY(40.75);
+		
+		$this->SetX(160);
+		$this->Cell(0, 5.5, $info['day'], 0, 0, 'L');
+		$this->SetX(170);
+		$this->Cell(0, 5.5, $info['month'], 0, 0, 'L');
+		$this->SetX(181);
+		$this->Cell(0, 5.5, $info['year'], 0, 0, 'L');
+		
+		// continue
+		$this->setY(100.5);
 	}
 
 	//Page footer baby
@@ -262,7 +310,7 @@ class Ticket2Report extends mPDF
         	
         	$comments = array_splice($entries, 1);
         	
-        	$this->MultiCell(186, 5.5, strip_tags($this->specialChars($body)), 0, 'L', 0);
+        	$this->MultiCell(186, 5.5, strip_tags($this->specialChars($entries[0]['body'])), 0, 'L', 0);
         	
         	$this->SetY(100.5);
         	
@@ -280,16 +328,30 @@ class Ticket2Report extends mPDF
             	
                 //$this->MultiCell(186, 7.15, '[' . ($entry['name'] ?: $entry['poster']) . ', ' . $this->formatTime($entry['time_spent']) . ']: ' . Format::html2text(strip_tags($entry['body']->display('pdf'))), 0, 'L', 0);
 
+            	$this->SetFont('Arial', 'B');
+            	
             	$intro = '[' . ($entry['name'] ?: $entry['poster']) . ', ' . $this->formatDatetime($entry['created']) . ', ' . $this->formatTime($entry['time_spent']) . ']: ';
             	
-            	$body = $intro . $entry['body'];
+            	$this->MultiCell(186, 7.15, $intro, 0, 'L', 0);
+            	
+            	$this->SetFont('Arial', '');
+            	
+            	$body = strip_tags($this->specialChars($entry['body']));
+            	
+            	$this->MultiCell(186, 7.15, $body, 0, 'L', 0);
+            	
+            	//$body = $intro . strip_tags($this->specialChars($entry['body']));
 
-            	$this->MultiCell(186, 7.15, strip_tags($this->specialChars($body)), 0, 'L', 0);
+				//$this->writeHtml($body);
+
+            	//$this->MultiCell(186, 7.15, $body, 0, 'L', 0);
             }
         }
         
         // stats
         $stats = $this->getTicketStats();
+        
+        $this->SetFont('Arial', 'B', 10);
         
         $this->WriteCell(0, 7.15, '', 0, 1, 'L');
         
@@ -300,26 +362,6 @@ class Ticket2Report extends mPDF
         if($stats['numOnsite']) {
         	$this->WriteCell(93, 7.15, 'Anzahl Anfahrten: ' . $stats['numOnsite'], 0, 0, 'L');
         }
-        
-        // owner
-        $this->setY(17);
-        $owner = $ticket->getOwner();
-        
-        $this->Cell(80, 7.15, $owner->getFullName(), 0, 1, 'L');
-        //$this->Cell(80, 7.15, $owner->getVar('Street'), 0, 1, 'L');
-
-        // date
-        $info = $this->getTicketInfo();
-        
-        $this->SetFont('Arial', '', 8.5);
-        $this->setY(40.75);
-        
-        $this->SetX(160);
-        $this->Cell(0, 5.5, $info['day'], 0, 0, 'L');
-        $this->SetX(170);
-        $this->Cell(0, 5.5, $info['month'], 0, 0, 'L');
-        $this->SetX(181);
-        $this->Cell(0, 5.5, $info['year'], 0, 0, 'L');
     }
     
     function formatTime($time) {
