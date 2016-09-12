@@ -316,7 +316,8 @@ class Ticket2Report extends mPDF
         	
             foreach($comments as $idx => $entry) {
             	
-            	if($entry['poster'] == 'SYSTEM' || !$entry['time_spent']) {
+            	//if($entry['poster'] == 'SYSTEM' || !$entry['time_spent']) {
+            	if($entry['poster'] == 'SYSTEM') {
             		continue;
             	}
 
@@ -330,7 +331,11 @@ class Ticket2Report extends mPDF
 
             	$this->SetFont('Arial', 'B');
             	
-            	$intro = '[' . ($entry['name'] ?: $entry['poster']) . ', ' . $this->formatDatetime($entry['created']) . ', ' . $this->formatTime($entry['time_spent']) . ']: ';
+            	if($entry['time_spent']) {
+            		$intro = '[' . ($entry['name'] ?: $entry['poster']) . ', ' . $this->formatDatetime($entry['created']) . ', ' . $this->formatTime($entry['time_spent']) . ']: ';
+            	} else {
+            		$intro = '[' . ($entry['name'] ?: $entry['poster']) . ', ' . $this->formatDatetime($entry['created']) . ']: ';
+            	}
             	
             	$this->MultiCell(186, 7.15, $intro, 0, 'L', 0);
             	
@@ -356,7 +361,8 @@ class Ticket2Report extends mPDF
         $this->WriteCell(0, 7.15, '', 0, 1, 'L');
         
         if($stats['sum']) {
-        	$this->WriteCell(93, 7.15, 'Arbeitszeit Gesamt: ' . $this->formatTime($stats['sum']), 0, 0, 'L');
+        	//$this->WriteCell(93, 7.15, 'Arbeitszeit Gesamt: ' . $this->formatTime($stats['sum']), 0, 0, 'L');
+        	$this->WriteCell(93, 7.15, 'Arbeitszeit Gesamt: ' . $ticket->getTimeSpent(), 0, 0, 'L');
         }
         
         if($stats['numOnsite']) {
