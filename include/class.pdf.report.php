@@ -341,7 +341,7 @@ class Ticket2Report extends mPDF
             	
             	$this->SetFont('Arial', '');
             	
-            	$body = strip_tags($this->specialChars($entry['body']));
+            	$body = strip_tags($this->specialChars($this->lineBreaks($entry['body'])));
             	
             	$this->MultiCell(186, 7.15, $body, 0, 'L', 0);
             	
@@ -442,6 +442,14 @@ class Ticket2Report extends mPDF
     	return str_replace(
     			array('&auml;', '&ouml;', '&uuml;', '&Auml;', '&Ouml;', '&Uuml;', '&szlig;', '&nbsp;', '<br>', '<br />', '<br></br>'),
     			array('ä', 'ö', 'ü', 'Ä', 'Ö', 'Ü', 'ß', ' ', ' ', ' ', ' '),
+    			$string
+    	);
+    }
+    
+    function lineBreaks($string) {
+    	return str_replace(
+    			array('<br></br>', '<br />', '<br>'),
+    			array(' ', ' ', ' '),
     			$string
     	);
     }
