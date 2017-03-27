@@ -354,17 +354,25 @@ class Ticket2Report extends mPDF
         }
         
         // hardware
-        $this->SetFont('Arial', 'B');
-        $this->MultiCell(186, 7.15, 'Hardware', 0, 'L', 0);
-        
-        $this->SetFont('Arial', '');
         $sql = 'SELECT * FROM `ost_ticket_hardware` WHERE `ticket_id` = ' . $ticket->getId();
 	$res = db_query($sql);
-	$i = 0;
-	while($row = db_fetch_array($res, MYSQL_ASSOC)) {
-		// $row['unit_cost']
-		$this->WriteCell(93, 7.15, $row['qty'] . ' x ' . $row['description'] . ': ' . $row['total_cost'] . ' €', 0, ($i % 2) ? 1 : 0, 'L');
-		$i++;
+	
+	if(count($res)) {
+		$this->AddPage();
+		
+		$this->SetFont('Arial', 'B');
+		$this->MultiCell(186, 7.15, 'Hardware', 0, 'L', 0);
+		
+		$this->SetFont('Arial', '');
+	
+		//$i = 0;
+		while($row = db_fetch_array($res, MYSQL_ASSOC)) {
+			// $row['unit_cost']
+			//$this->WriteCell(93, 7.15, $row['qty'] . ' x ' . $row['description'] . ': ' . $row['total_cost'] . ' €', 0, ($i % 2) ? 1 : 0, 'L');
+			//$i++;
+			$hw = '• ' . $row['qty'] . ' x ' . $row['description'] . ': ' . $row['total_cost'] . ' €';
+			$this->MultiCell(186, 7.15, $hw, 0, 'L', 0);
+		}
 	}
         
         // stats
