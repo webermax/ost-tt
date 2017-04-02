@@ -356,14 +356,15 @@ class Ticket2Report extends mPDF
         }
         
         // owner
-        $owner = $ticket->getOwner();
+        //$owner = $ticket->getOwner();
         
         // hardware
         $sql = 'SELECT * FROM `ost_ticket_hardware` WHERE `ticket_id` = ' . $ticket->getId();
 	$res = db_query($sql);
 	
-	if(count($res)) {
-		$this->AddPage();
+	if($res->num_rows) {
+		//$this->AddPage();
+		$this->WriteCell(0, 7.15, '', 0, 1, 'L');
 		
 		$this->SetFont('Arial', 'B');
 		$this->MultiCell(186, 7.15, 'Hardware', 0, 'L', 0);
@@ -377,9 +378,9 @@ class Ticket2Report extends mPDF
 			//$i++;
 			$hw = '• ' . $row['qty'] . ' x ' . $row['description'];
 			
-			if($owner->getVar('blanco') == 'Nein') {
+			//if($owner->getVar('blanco') == 'Nein') {
 				$hw .= ': ' . $row['total_cost'] . ' €';
-			}
+			//}
 			
 			$this->MultiCell(186, 7.15, $hw, 0, 'L', 0);
 		}
@@ -394,11 +395,27 @@ class Ticket2Report extends mPDF
         
         if($stats['sum']) {
         	//$this->WriteCell(93, 7.15, 'Arbeitszeit Gesamt: ' . $this->formatTime($stats['sum']), 0, 0, 'L');
-        	$this->WriteCell(93, 7.15, 'Arbeitszeit Gesamt: ' . $this->formatTime($ticket->getRealTimeSpent()), 0, 0, 'L');
+        	
+        	$overall = 'Gesamt: ' . $this->formatTime($ticket->getRealTimeSpent());
+        	
+        	if($ticket->getVar('maintenance') == 'Ja') {
+        		$overall .= ' (Wartung)';
+        	}
+        	
+        	$this->WriteCell(93, 7.15, $overall, 0, 0, 'L');
+        	//$this->MultiCell(186, 7.15, $overall, 0, 'L', 0);
         }
         
         if($stats['numOnsite']) {
-        	$this->WriteCell(93, 7.15, 'Anzahl Anfahrten: ' . $stats['numOnsite'], 0, 0, 'L');
+        
+        	$visits = 'Anfahrten: ' . $stats['numOnsite'];
+        
+        	if($ticket->getVar('maintenance') == 'Ja') {
+        		$visits .= ' (nächste Monatsrechnung)';
+        	}
+        
+        	$this->WriteCell(93, 7.15, $visits, 0, 0, 'L');
+        	//$this->MultiCell(186, 7.15, $visits, 0, 'L', 0);
         }
     }
     
