@@ -179,6 +179,8 @@ class Ticket2Report extends mPDF
         $this->MultiCell($w, 7, $text, $border, 'L');
 
     }
+    
+    // TODO: german float values for currency units
 
     function _print() {
 
@@ -353,6 +355,9 @@ class Ticket2Report extends mPDF
             }
         }
         
+        // owner
+        $owner = $ticket->getOwner();
+        
         // hardware
         $sql = 'SELECT * FROM `ost_ticket_hardware` WHERE `ticket_id` = ' . $ticket->getId();
 	$res = db_query($sql);
@@ -370,7 +375,12 @@ class Ticket2Report extends mPDF
 			// $row['unit_cost']
 			//$this->WriteCell(93, 7.15, $row['qty'] . ' x ' . $row['description'] . ': ' . $row['total_cost'] . ' €', 0, ($i % 2) ? 1 : 0, 'L');
 			//$i++;
-			$hw = '• ' . $row['qty'] . ' x ' . $row['description'] . ': ' . $row['total_cost'] . ' €';
+			$hw = '• ' . $row['qty'] . ' x ' . $row['description'];
+			
+			if($owner->getVar('blanco') == 'Nein') {
+				$hw .= ': ' . $row['total_cost'] . ' €';
+			}
+			
 			$this->MultiCell(186, 7.15, $hw, 0, 'L', 0);
 		}
 	}
@@ -384,7 +394,7 @@ class Ticket2Report extends mPDF
         
         if($stats['sum']) {
         	//$this->WriteCell(93, 7.15, 'Arbeitszeit Gesamt: ' . $this->formatTime($stats['sum']), 0, 0, 'L');
-        	$this->WriteCell(93, 7.15, 'Arbeitszeit Gesamt: ' . $ticket->getTimeSpent(), 0, 0, 'L');
+        	$this->WriteCell(93, 7.15, 'Arbeitszeit Gesamt: ' . $this->formatTime($ticket->getRealTimeSpent()), 0, 0, 'L');
         }
         
         if($stats['numOnsite']) {
@@ -399,18 +409,29 @@ class Ticket2Report extends mPDF
     	$formatted = '';
     
     	if ($hours > 0) {
-    		$formatted .= $hours . ' h';
+    		$formatted .= $hours . ' Stunde';
     	}
+    	
+    	if ($hours > 1) {
+    		$formatted .= 'n';
+    	}
+    	
     	if ($minutes > 0) {
-    		if ($formatted)
+    		if ($formatted) {
     			$formatted .= ', ';
-    		$formatted .= $minutes . ' min';
+    		}
+    		$formatted .= $minutes . ' Minute';
     	}
+    	
+    	if ($minutes > 1) {
+    		$formatted .= 'n';
+    	}
+    	
     	return $formatted;
     }
     
     function formatDatetime($time) {
-    	return date("d.m.y",strtotime($time));
+    	return date("d.m.y", strtotime($time));
     }
     
     function getTicketStats() {
@@ -462,8 +483,8 @@ class Ticket2Report extends mPDF
     
     function specialChars($string) {
     	return str_replace(
-    			array('&auml;', '&ouml;', '&uuml;', '&Auml;', '&Ouml;', '&Uuml;', '&szlig;', '&nbsp;', '<br>', '<br />', '<br></br>'),
-    			array('ä', 'ö', 'ü', 'Ä', 'Ö', 'Ü', 'ß', ' ', ' ', ' ', ' '),
+    			array('&auml;', '&ouml;', '&uuml;', '&Auml;', '&Ouml;', '&Uuml;', '&szlig;', '&nbsp;', '<br>', '<br />', '<br></br>', '<br/>'),
+    			array('ä', 'ö', 'ü', 'Ä', 'Ö', 'Ü', 'ß', ' ', ' ', ' ', ' ', ' '),
     			$string
     	);
     }
