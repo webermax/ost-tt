@@ -536,12 +536,12 @@ $tcount+= $ticket->getNumNotes();
                     $to =sprintf('%s &lt;%s&gt;',
                             Format::htmlchars($ticket->getName()),
                             $ticket->getReplyToEmail());
-                    $emailReply = (!isset($info['emailreply']) || $info['emailreply']);
+                    //$emailReply = (!isset($info['emailreply']) || $info['emailreply']);
+                    $emailReply = false;
                     ?>
                     <select id="emailreply" name="emailreply">
                         <option value="1" <?php echo $emailReply ?  'selected="selected"' : ''; ?>><?php echo $to; ?></option>
-                        <option value="0" <?php echo !$emailReply ? 'selected="selected"' : ''; ?>
-                        >&mdash; <?php echo __('Do Not Email Reply'); ?> &mdash;</option>
+                        <option value="0" <?php echo !$emailReply ? 'selected="selected"' : ''; ?>>&mdash; <?php echo __('Do Not Email Reply'); ?> &mdash;</option>
                     </select>
                 </td>
             </tr>
@@ -663,7 +663,7 @@ print $response_form->getField('attachments')->render();
                     <label><strong><?php echo __('Ticket Status');?>:</strong></label>
                 </td>
                 <td>
-                    <select name="reply_status_id">
+                    <select onchange="pdfReportCheck(this.value)" name="reply_status_id">
                     <?php
                     $statusId = $info['reply_status_id'] ?: $ticket->getStatusId();
                     $states = array('open');
@@ -742,6 +742,21 @@ print $response_form->getField('attachments')->render();
             <input class="btn_sm" type="reset" value="<?php echo __('Reset');?>">
         </p>
     </form>
+    
+    <script>
+    function pdfReportCheck(val) {
+    	//(val == 2 || val == 3)
+    	if('<?php echo $user->getVar('automail'); ?>' == 'Ja' && val == 2 && confirm('Kunde wünscht Report-Versand. Jetzt erstellen?')) {
+    		$('#response').redactor('set', `Sehr geehrter Kunde,
+<br>
+<br>wir haben Ihre Anfrage zum Thema <?php echo $ticket->getSubject(); ?> (<?php echo sprintf(__('Ticket #%s'), $ticket->getNumber()); ?>) bearbeitet. Anbei übersenden wir unseren Dienstleistungsbericht.
+<br>
+<br>Für Sie tätig war: <?php echo $thisstaff->getName(); ?>.`);
+		$('#emailreply').val("1");
+    	}
+    }
+    </script>
+    
     <?php
     } ?>
     <form id="note" action="tickets.php?id=<?php echo $ticket->getId(); ?>#note" name="note" method="post" enctype="multipart/form-data">
