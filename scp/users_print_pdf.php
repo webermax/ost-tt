@@ -40,15 +40,20 @@ if($_REQUEST['id']) {
 }
 
 function pdfExport($ticket, $psize='A4', $notes=false) {
+	$pdf = pdfGenerate($ticket, $psize, $notes);
+	$pdf->Output($name, 'I');
+	exit;
+}
+
+function pdfGenerate($ticket, $psize='A4', $notes=false) {
 	require_once(INCLUDE_DIR.'class.pdf.report.php');
 
 	$source = 'Dienstleistungsbericht.pdf';
-	$name='Ticket-'.$ticket->getNumber().'-Report.pdf';
+	//$name='Ticket-'.$ticket->getNumber().'-Report.pdf';
 	
 	$pdf = new Ticket2Report($source, $ticket, $psize, $notes);
-	
-	$pdf->Output($name, 'I');
-	exit;
+
+	return $pdf;
 }
 
 //Navigation & Page Info

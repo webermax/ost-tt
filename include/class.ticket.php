@@ -2043,6 +2043,23 @@ class Ticket {
         /* email the user??  - if disabled - then bail out */
         if (!$alert) return $response;
 
+        /* begin - generate pdf report attachment */
+        if($this->getOwner()->getVar('automail') == 'Ja') {
+            require_once(INCLUDE_DIR.'class.pdf.report.php');
+            $source = 'Dienstleistungsbericht.pdf';
+            //$name='Ticket-'.$ticket->getNumber().'-Report.pdf';
+            $pdfReport = new Ticket2Report($source, $this, 'A4', false);
+
+            $pdfReportFile = array();
+            $pdfReportFile['type'] = 'application/pdf';
+            $pdfReportFile['data'] = $pdfReport->Output($name, 'S');
+            $pdfReportFile['name'] = 'Dienstleistungsbericht.pdf';
+            $pdfReportFileId = AttachmentFile::save($pdfReportFile);
+
+            $response->saveAttachment($pdfReportFileId);
+        }
+        /* end - generate pdf report attachment */
+
         $dept = $this->getDept();
 
         if($thisstaff && $vars['signature']=='mine')
@@ -2070,6 +2087,9 @@ class Ticket {
                     $variables + array('recipient' => $this->getOwner()));
 
             $attachments = $cfg->emailAttachments()?$response->getAttachments():array();
+            
+            //var_dump($attachments);exit;
+            
             $email->send($this->getOwner(), $msg['subj'], $msg['body'], $attachments,
                 $options);
         }
