@@ -151,7 +151,8 @@ class Ticket2Report extends mPDF
 		$this->Cell(0, 5.5, $info['year'], 0, 0, 'L');
 		
 		// continue
-		$this->setY(100.5);
+		//$this->setY(100.5);
+		$this->SetY(52);
 	}
 
 	//Page footer baby
@@ -312,9 +313,11 @@ class Ticket2Report extends mPDF
         	
         	$comments = array_splice($entries, 1);
         	
-        	$this->MultiCell(186, 5.5, strip_tags($this->specialChars($entries[0]['body'])), 0, 'L', 0);
+        	$this->MultiCell(186, 5.55, strip_tags($this->specialChars($this->lineBreaks($entries[0]['body']))), 0, 'L', 0);
         	
-        	$this->SetY(100.5);
+        	//$this->SetY(100.5);
+        	$this->WriteCell(0, 5.55, '', 0, 1, 'L');
+        	$this->SetFont('Arial', 'B', 10);
         	
             foreach($comments as $idx => $entry) {
             	
@@ -339,13 +342,15 @@ class Ticket2Report extends mPDF
             		$intro = '[' . ($entry['name'] ?: $entry['poster']) . ', ' . $this->formatDatetime($entry['created']) . ']: ';
             	}
             	
-            	$this->MultiCell(186, 7.15, $intro, 0, 'L', 0);
+            	//$this->MultiCell(186, 7.15, $intro, 0, 'L', 0);
+            	$this->MultiCell(186, 5.55, $intro, 0, 'L', 0);
             	
             	$this->SetFont('Arial', '');
             	
             	$body = strip_tags($this->specialChars($this->lineBreaks($entry['body'])));
             	
-            	$this->MultiCell(186, 7.15, $body, 0, 'L', 0);
+            	//$this->MultiCell(186, 7.15, $body, 0, 'L', 0);
+            	$this->MultiCell(186, 5.55, $body, 0, 'L', 0);
             	
             	//$body = $intro . strip_tags($this->specialChars($entry['body']));
 
@@ -364,10 +369,10 @@ class Ticket2Report extends mPDF
 	
 	if($res->num_rows) {
 		//$this->AddPage();
-		$this->WriteCell(0, 7.15, '', 0, 1, 'L');
+		$this->WriteCell(0, 5.55, '', 0, 1, 'L');
 		
 		$this->SetFont('Arial', 'B');
-		$this->MultiCell(186, 7.15, 'Hardware', 0, 'L', 0);
+		$this->MultiCell(186, 5.55, 'Hardware', 0, 'L', 0);
 		
 		$this->SetFont('Arial', '');
 	
@@ -382,7 +387,7 @@ class Ticket2Report extends mPDF
 				$hw .= ': ' . $row['total_cost'] . ' €';
 			//}
 			
-			$this->MultiCell(186, 7.15, $hw, 0, 'L', 0);
+			$this->MultiCell(186, 5.55, $hw, 0, 'L', 0);
 		}
 	}
         
@@ -391,7 +396,7 @@ class Ticket2Report extends mPDF
         
         $this->SetFont('Arial', 'B', 10);
         
-        $this->WriteCell(0, 7.15, '', 0, 1, 'L');
+        $this->WriteCell(0, 5.55, '', 0, 1, 'L');
         
         if($stats['sum']) {
         	//$this->WriteCell(93, 7.15, 'Arbeitszeit Gesamt: ' . $this->formatTime($stats['sum']), 0, 0, 'L');
@@ -402,7 +407,7 @@ class Ticket2Report extends mPDF
         		$overall .= ' (Wartung)';
         	}
         	
-        	$this->WriteCell(93, 7.15, $overall, 0, 0, 'L');
+        	$this->WriteCell(93, 5.55, $overall, 0, 0, 'L');
         	//$this->MultiCell(186, 7.15, $overall, 0, 'L', 0);
         }
         
@@ -414,7 +419,7 @@ class Ticket2Report extends mPDF
         		$visits .= ' (nächste Monatsrechnung)';
         	}
         
-        	$this->WriteCell(93, 7.15, $visits, 0, 0, 'L');
+        	$this->WriteCell(93, 5.55, $visits, 0, 0, 'L');
         	//$this->MultiCell(186, 7.15, $visits, 0, 'L', 0);
         }
     }
