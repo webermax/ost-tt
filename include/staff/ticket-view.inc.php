@@ -746,12 +746,12 @@ print $response_form->getField('attachments')->render();
     <script>
     function pdfReportCheck(val) {
     	//(val == 2 || val == 3)
-    	if('<?php echo $user->getVar('automail'); ?>' == 'Ja' && val == 2 && confirm('Kunde wünscht Report-Versand. Jetzt erstellen?')) {
-    		$('#response').redactor('set', `Sehr geehrter Kunde,
+    	if('<?php echo $user->getVar('automail'); ?>' == 'Ja' && $('#emailreply').val() == 0 && val == 2 && confirm('Kunde wünscht Report-Versand. Jetzt Report versenden?')) {
+    		/*$('#response').redactor('set', `Sehr geehrter Kunde,
 <br>
 <br>wir haben Ihre Anfrage zum Thema <?php echo $ticket->getSubject(); ?> (<?php echo sprintf(__('Ticket #%s'), $ticket->getNumber()); ?>) bearbeitet. Anbei übersenden wir unseren Dienstleistungsbericht.
 <br>
-<br>Für Sie tätig war: <?php echo $thisstaff->getName(); ?>.`);
+<br>Für Sie tätig war: <?php echo $thisstaff->getName(); ?>.`);*/
 		$('#emailreply').val("1");
     	}
     }

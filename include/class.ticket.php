@@ -2070,7 +2070,12 @@ class Ticket {
             $signature='';
 
         $variables = array(
-                'response' => $response,
+                //'response' => $response,
+                'response' => "Sehr geehrter Kunde,
+<br>
+<br>wir haben Ihre Anfrage zum Thema " . $this->getSubject()  . " (" . sprintf(__('Ticket #%s'), $this->getNumber())  . ") bearbeitet. Anbei übersenden wir unseren Dienstleistungsbericht.
+<br>
+<br>Für Sie tätig war: " . $thisstaff->getName() . ".",
                 'signature' => $signature,
                 'staff' => $thisstaff,
                 'poster' => $thisstaff);
